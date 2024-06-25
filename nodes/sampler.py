@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import logging
+import os
 from abc import ABC, abstractproperty
 from collections.abc import Iterable
-from pathlib import Path
 
 from dynamicprompts.sampling_context import SamplingContext
 from dynamicprompts.wildcards import WildcardManager
@@ -37,24 +37,16 @@ class DPAbstractSamplerNode(ABC):
         self._wildcard_manager = WildcardManager(path=wildcards_folder)
         self._current_prompt = None
 
-    def _find_wildcards_folder(self) -> Path | None:
+    def _find_wildcards_folder(self):
         """
         Find the wildcards folder.
-        First look in the comfy_dynamicprompts folder, then in the custom_nodes folder, then in the Comfui base folder.
         """
-        from folder_paths import base_path, folder_names_and_paths
+        install_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        wildcard_path = os.path.join(install_dir, "wildcards")
 
-        wildcard_path = Path(base_path) / "wildcards"
-
-        if wildcard_path.exists():
-            return wildcard_path
-
-        extension_path = (
-            Path(folder_names_and_paths["custom_nodes"][0][0])
-            / "comfyui-dynamicprompts"
-        )
-        wildcard_path = extension_path / "wildcards"
-        wildcard_path.mkdir(parents=True, exist_ok=True)
+        if not os.path.exists(wildcard_path):
+            wildcard_path = os.path.join(wildcard_path)
+            os.mkdir(wildcard_path)
 
         return wildcard_path
 
